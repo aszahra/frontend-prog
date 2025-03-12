@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "roomName": "Ruang Konferensi A",
+    "capacity": 10,
+    "description": "Ruang luas dengan fasilitas modern."
+  },
+  {
+    "id": 2,
+    "roomName": "Ruang Rapat B",
+    "capacity": 6,
+    "description": "Ruang nyaman untuk diskusi tim kecil."
+  },
+  {
+    "id": 3,
+    "roomName": "Ruang Pelatihan C",
+    "capacity": 20,
+    "description": "Dilengkapi dengan proyektor dan papan tulis."
+  },
+  {
+    "id": 4,
+    "roomName": "Ruang Diskusi D",
+    "capacity": 8,
+    "description": "Ruang santai dengan sofa dan meja bundar."
+  },
+  {
+    "id": 5,
+    "roomName": "Ruang Pertemuan E",
+    "capacity": 12,
+    "description": "Ruang serbaguna dengan AC dan sound system."
+  },
+  {
+    "id": 6,
+    "roomName": "Ruang Workshop F",
+    "capacity": 15,
+    "description": "Ruang besar dengan meja kerja dan stop kontak di setiap meja."
+  },
+  {
+    "id": 7,
+    "roomName": "Ruang Presentasi G",
+    "capacity": 25,
+    "description": "Dilengkapi layar lebar dan kursi berundak."
+  },
+  {
+    "id": 8,
+    "roomName": "Ruang Kolaborasi H",
+    "capacity": 5,
+    "description": "Ruang kecil untuk brainstorming dengan papan ide."
+  },
+  {
+    "id": 9,
+    "roomName": "Ruang Seminar I",
+    "capacity": 30,
+    "description": "Ruang besar dengan panggung dan microphone nirkabel."
+  },
+  {
+    "id": 10,
+    "roomName": "Ruang Privat J",
+    "capacity": 4,
+    "description": "Ruang tenang untuk rapat pribadi atau konsultasi."
+  }
+]

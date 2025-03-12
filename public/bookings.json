@@ -1,0 +1,8 @@
+[
+    { "id": 1, "room": "Room A", "name": "John Doe", "checkInDate": "2023-11-01", "checkOutDate": "2023-11-05", "status": "Confirmed" },
+    { "id": 2, "room": "Room B", "name": "Jane Smith", "checkInDate": "2023-11-02", "checkOutDate": "2023-11-06", "status": "Pending" },
+    { "id": 3, "room": "Room C", "name": "Alice Johnson", "checkInDate": "2023-11-03", "checkOutDate": "2023-11-07", "status": "Cancelled" },
+    { "id": 4, "room": "Room D", "name": "Bob Brown", "checkInDate": "2023-11-04", "checkOutDate": "2023-11-08", "status": "Confirmed" },
+    { "id": 5, "room": "Room E", "name": "Charlie Davis", "checkInDate": "2023-11-05", "checkOutDate": "2023-11-09", "status": "Pending" },
+    { "id": 6, "room": "Room F", "name": "Eve White", "checkInDate": "2023-11-06", "checkOutDate": "2023-11-10", "status": "Confirmed" }
+  ]

@@ -1,209 +1,269 @@
-// app/room/page.tsx
-
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 
 export default function RoomPage() {
-  // State untuk form input
+  const [rooms, setRooms] = useState([]);
+  const [filteredRooms, setFilteredRooms] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortConfig, setSortConfig] = useState({ key: "", direction: "" });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(2);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
-    roomName: "",
-    capacity: "",
-    description: "",
+    nama: "",
+    kapasitas: "",
+    kategori: "",
+    harga: "",
+    status: "",
   });
 
-  // State untuk menyimpan data dari room.json
-  const [rooms, setRooms] = useState([]);
-
-  // State untuk search, filter, sorting, dan pagination
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortField, setSortField] = useState("roomName");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(5);
-
-  // Fetch data dari room.json saat komponen dimuat
+  // Fetch data from room.json
   useEffect(() => {
     fetch("/data/room.json")
       .then((res) => res.json())
-      .then((data) => setRooms(data));
+      .then((data) => {
+        setRooms(data);
+        setFilteredRooms(data);
+      });
   }, []);
 
-  // Handler untuk mengupdate state form
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
+  // Handle sorting
+  const handleSort = (key: string) => {
+    let direction = "ascending";
+    if (sortConfig.key === key && sortConfig.direction === "ascending") {
+      direction = "descending";
+    }
+    setSortConfig({ key, direction });
 
-  // Handler untuk submit form
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const newRoom = {
-      id: rooms.length + 1,
-      ...formData,
-    };
-    setRooms((prevRooms) => [...prevRooms, newRoom]);
-    setFormData({ roomName: "", capacity: "", description: "" });
-    alert("Room added successfully!");
-  };
-
-  // Filter data berdasarkan search term
-  const filteredRooms = useMemo(() => {
-    return rooms.filter((room) =>
-      room.roomName.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [rooms, searchTerm]);
-
-  // Sort data berdasarkan field dan order
-  const sortedRooms = useMemo(() => {
-    return [...filteredRooms].sort((a, b) => {
-      if (a[sortField] < b[sortField]) return sortOrder === "asc" ? -1 : 1;
-      if (a[sortField] > b[sortField]) return sortOrder === "asc" ? 1 : -1;
+    const sortedData = [...filteredRooms].sort((a, b) => {
+      if (a[key] < b[key]) return direction === "ascending" ? -1 : 1;
+      if (a[key] > b[key]) return direction === "ascending" ? 1 : -1;
       return 0;
     });
-  }, [filteredRooms, sortField, sortOrder]);
+    setFilteredRooms(sortedData);
+  };
+
+  // Handle search
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const term = e.target.value.toLowerCase();
+    setSearchTerm(term);
+
+    const filtered = rooms.filter((room) =>
+      Object.values(room).some((value) =>
+        String(value).toLowerCase().includes(term)
+      )
+    );
+    setFilteredRooms(filtered);
+    setCurrentPage(1); // Reset pagination
+  };
 
   // Pagination logic
-  const paginatedRooms = useMemo(() => {
-    const startIndex = (currentPage - 1) * pageSize;
-    return sortedRooms.slice(startIndex, startIndex + pageSize);
-  }, [sortedRooms, currentPage, pageSize]);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredRooms.slice(indexOfFirstItem, indexOfLastItem);
 
-  // Handler untuk sorting
-  const handleSort = (field: string) => {
-    if (field === sortField) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortOrder("asc");
-    }
+  const totalPages = Math.ceil(filteredRooms.length / itemsPerPage);
+
+  // Modal handlers
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleSubmit = () => {
+    const newRoom = { id: rooms.length + 1, ...formData };
+    setRooms([...rooms, newRoom]);
+    setFilteredRooms([...filteredRooms, newRoom]);
+    closeModal();
+    setFormData({
+      nama: "",
+      kapasitas: "",
+      kategori: "",
+      harga: "",
+      status: "",
+    });
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      {/* Form untuk menambahkan room */}
-      <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md mb-8">
-        <h2 className="text-xl font-bold mb-4">Add New Room</h2>
-        <div className="mb-4">
-          <label htmlFor="roomName" className="block text-sm font-medium text-gray-700">
-            Room Name
-          </label>
-          <input
-            type="text"
-            id="roomName"
-            name="roomName"
-            value={formData.roomName}
-            onChange={handleChange}
-            required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="capacity" className="block text-sm font-medium text-gray-700">
-            Capacity
-          </label>
-          <input
-            type="number"
-            id="capacity"
-            name="capacity"
-            value={formData.capacity}
-            onChange={handleChange}
-            required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-            Description
-          </label>
-          <textarea
-            id="description"
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            rows={3}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          ></textarea>
-        </div>
+    <div className="p-4">
+      {/* Search and Add Button */}
+      <div className="flex justify-between mb-4">
+        <input
+          type="text"
+          placeholder="Search..."
+          value={searchTerm}
+          onChange={handleSearch}
+          className="border p-2 rounded"
+        />
         <button
-          type="submit"
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          onClick={openModal}
+          className="bg-blue-500 text-white px-4 py-2 rounded"
         >
-          Save Room
+          Tambah
         </button>
-      </form>
-
-      {/* Search dan Tabel */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <h2 className="text-xl font-bold mb-4">Room List</h2>
-        <div className="mb-4">
-          <input
-            type="text"
-            placeholder="Search by room name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          />
-        </div>
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th
-                onClick={() => handleSort("roomName")}
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-              >
-                Room Name
-              </th>
-              <th
-                onClick={() => handleSort("capacity")}
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-              >
-                Capacity
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Description
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {paginatedRooms.map((room) => (
-              <tr key={room.id}>
-                <td className="px-6 py-4 whitespace-nowrap">{room.roomName}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{room.capacity}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{room.description}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {/* Pagination */}
-        <div className="flex justify-between mt-4">
-          <button
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-            className="px-4 py-2 border rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-          >
-            Previous
-          </button>
-          <span className="text-sm text-gray-700">
-            Page {currentPage} of {Math.ceil(sortedRooms.length / pageSize)}
-          </span>
-          <button
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, Math.ceil(sortedRooms.length / pageSize)))
-            }
-            disabled={currentPage === Math.ceil(sortedRooms.length / pageSize)}
-            className="px-4 py-2 border rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
       </div>
+
+      {/* Table */}
+      <table className="min-w-full border-collapse border border-gray-300">
+        <thead>
+          <tr>
+            <th
+              onClick={() => handleSort("nama")}
+              className="cursor-pointer border p-2"
+            >
+              Nama
+            </th>
+            <th
+              onClick={() => handleSort("kapasitas")}
+              className="cursor-pointer border p-2"
+            >
+              Kapasitas
+            </th>
+            <th
+              onClick={() => handleSort("kategori")}
+              className="cursor-pointer border p-2"
+            >
+              Kategori
+            </th>
+            <th
+              onClick={() => handleSort("harga")}
+              className="cursor-pointer border p-2"
+            >
+              Harga
+            </th>
+            <th
+              onClick={() => handleSort("status")}
+              className="cursor-pointer border p-2"
+            >
+              Status
+            </th>
+            <th className="border p-2">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {currentItems.map((room) => (
+            <tr key={room.id}>
+              <td className="border p-2">{room.nama}</td>
+              <td className="border p-2">{room.kapasitas}</td>
+              <td className="border p-2">{room.kategori}</td>
+              <td className="border p-2">{room.harga}</td>
+              <td className="border p-2">{room.status}</td>
+              <td className="border p-2">
+                <button className="bg-green-500 text-white px-2 py-1 rounded mr-2">
+                  Approve
+                </button>
+                <button className="bg-red-500 text-white px-2 py-1 rounded mr-2">
+                  Reject
+                </button>
+                <button className="bg-yellow-500 text-white px-2 py-1 rounded mr-2">
+                  Edit
+                </button>
+                <button className="bg-gray-500 text-white px-2 py-1 rounded">
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Pagination */}
+      <div className="flex justify-center mt-4">
+        {Array.from({ length: totalPages }, (_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentPage(index + 1)}
+            className={`px-4 py-2 mx-1 rounded ${
+              currentPage === index + 1
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200"
+            }`}
+          >
+            {index + 1}
+          </button>
+        ))}
+      </div>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg">
+            <h2 className="text-xl font-bold mb-4">Tambah Ruangan</h2>
+            <form>
+              <div className="mb-4">
+                <label className="block mb-2">Nama</label>
+                <input
+                  type="text"
+                  name="nama"
+                  value={formData.nama}
+                  onChange={handleChange}
+                  className="border p-2 w-full"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block mb-2">Kapasitas</label>
+                <input
+                  type="number"
+                  name="kapasitas"
+                  value={formData.kapasitas}
+                  onChange={handleChange}
+                  className="border p-2 w-full"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block mb-2">Kategori</label>
+                <input
+                  type="text"
+                  name="kategori"
+                  value={formData.kategori}
+                  onChange={handleChange}
+                  className="border p-2 w-full"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block mb-2">Harga</label>
+                <input
+                  type="number"
+                  name="harga"
+                  value={formData.harga}
+                  onChange={handleChange}
+                  className="border p-2 w-full"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block mb-2">Status</label>
+                <input
+                  type="text"
+                  name="status"
+                  value={formData.status}
+                  onChange={handleChange}
+                  className="border p-2 w-full"
+                />
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="bg-gray-500 text-white px-4 py-2 rounded mr-2"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  className="bg-blue-500 text-white px-4 py-2 rounded"
+                >
+                  Simpan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

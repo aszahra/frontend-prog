@@ -1,62 +1,82 @@
 [
   {
     "id": 1,
-    "roomName": "Ruang Konferensi A",
-    "capacity": 10,
-    "description": "Ruang luas dengan fasilitas modern."
+    "nama": "Room A",
+    "kapasitas": 10,
+    "kategori": "Meeting",
+    "harga": 500000,
+    "status": "Available"
   },
   {
     "id": 2,
-    "roomName": "Ruang Rapat B",
-    "capacity": 6,
-    "description": "Ruang nyaman untuk diskusi tim kecil."
+    "nama": "Room B",
+    "kapasitas": 20,
+    "kategori": "Conference",
+    "harga": 1000000,
+    "status": "Booked"
   },
   {
     "id": 3,
-    "roomName": "Ruang Pelatihan C",
-    "capacity": 20,
-    "description": "Dilengkapi dengan proyektor dan papan tulis."
+    "nama": "Room C",
+    "kapasitas": 15,
+    "kategori": "Workshop",
+    "harga": 750000,
+    "status": "Available"
   },
   {
     "id": 4,
-    "roomName": "Ruang Diskusi D",
-    "capacity": 8,
-    "description": "Ruang santai dengan sofa dan meja bundar."
+    "nama": "Room D",
+    "kapasitas": 8,
+    "kategori": "Discussion",
+    "harga": 400000,
+    "status": "Maintenance"
   },
   {
     "id": 5,
-    "roomName": "Ruang Pertemuan E",
-    "capacity": 12,
-    "description": "Ruang serbaguna dengan AC dan sound system."
+    "nama": "Room E",
+    "kapasitas": 12,
+    "kategori": "Training",
+    "harga": 600000,
+    "status": "Available"
   },
   {
     "id": 6,
-    "roomName": "Ruang Workshop F",
-    "capacity": 15,
-    "description": "Ruang besar dengan meja kerja dan stop kontak di setiap meja."
+    "nama": "Room F",
+    "kapasitas": 25,
+    "kategori": "Seminar",
+    "harga": 1200000,
+    "status": "Booked"
   },
   {
     "id": 7,
-    "roomName": "Ruang Presentasi G",
-    "capacity": 25,
-    "description": "Dilengkapi layar lebar dan kursi berundak."
+    "nama": "Room G",
+    "kapasitas": 30,
+    "kategori": "Event",
+    "harga": 1500000,
+    "status": "Available"
   },
   {
     "id": 8,
-    "roomName": "Ruang Kolaborasi H",
-    "capacity": 5,
-    "description": "Ruang kecil untuk brainstorming dengan papan ide."
+    "nama": "Room H",
+    "kapasitas": 5,
+    "kategori": "Private",
+    "harga": 300000,
+    "status": "Maintenance"
   },
   {
     "id": 9,
-    "roomName": "Ruang Seminar I",
-    "capacity": 30,
-    "description": "Ruang besar dengan panggung dan microphone nirkabel."
+    "nama": "Room I",
+    "kapasitas": 18,
+    "kategori": "Team Building",
+    "harga": 900000,
+    "status": "Available"
   },
   {
     "id": 10,
-    "roomName": "Ruang Privat J",
-    "capacity": 4,
-    "description": "Ruang tenang untuk rapat pribadi atau konsultasi."
+    "nama": "Room J",
+    "kapasitas": 10,
+    "kategori": "Brainstorming",
+    "harga": 500000,
+    "status": "Booked"
   }
 ]

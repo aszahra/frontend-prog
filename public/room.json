@@ -1,0 +1,82 @@
+[
+    {
+      "id": 1,
+      "nama": "Room A",
+      "kapasitas": 10,
+      "kategori": "Meeting Room",
+      "harga": 500000,
+      "status": "Available"
+    },
+    {
+      "id": 2,
+      "nama": "Room B",
+      "kapasitas": 20,
+      "kategori": "Conference Room",
+      "harga": 1000000,
+      "status": "Unavailable"
+    },
+    {
+      "id": 3,
+      "nama": "Room C",
+      "kapasitas": 15,
+      "kategori": "Meeting Room",
+      "harga": 750000,
+      "status": "Available"
+    },
+    {
+      "id": 4,
+      "nama": "Room D",
+      "kapasitas": 25,
+      "kategori": "Training Room",
+      "harga": 1200000,
+      "status": "Unavailable"
+    },
+    {
+      "id": 5,
+      "nama": "Room E",
+      "kapasitas": 30,
+      "kategori": "Conference Room",
+      "harga": 1500000,
+      "status": "Available"
+    },
+    {
+      "id": 6,
+      "nama": "Room F",
+      "kapasitas": 12,
+      "kategori": "Meeting Room",
+      "harga": 600000,
+      "status": "Unavailable"
+    },
+    {
+      "id": 7,
+      "nama": "Room G",
+      "kapasitas": 8,
+      "kategori": "Interview Room",
+      "harga": 400000,
+      "status": "Available"
+    },
+    {
+      "id": 8,
+      "nama": "Room H",
+      "kapasitas": 50,
+      "kategori": "Event Hall",
+      "harga": 2500000,
+      "status": "Unavailable"
+    },
+    {
+      "id": 9,
+      "nama": "Room I",
+      "kapasitas": 40,
+      "kategori": "Conference Room",
+      "harga": 2000000,
+      "status": "Available"
+    },
+    {
+      "id": 10,
+      "nama": "Room J",
+      "kapasitas": 18,
+      "kategori": "Meeting Room",
+      "harga": 900000,
+      "status": "Unavailable"
+    }
+  ]

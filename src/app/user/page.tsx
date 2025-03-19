@@ -126,6 +126,16 @@ export default function UsersPage() {
       >
         <thead>
           <tr style={{ backgroundColor: "#f2f2f2" }}>
+          <th
+              onClick={() => handleSort("id")}
+              style={{
+                border: "1px solid #dee2e6",
+                padding: "12px",
+                cursor: "pointer",
+              }}
+            >
+              No {sortBy === "id" && (sortOrder === "asc" ? "▲" : "▼")}
+            </th>
             <th
               onClick={() => handleSort("name")}
               style={{

@@ -106,10 +106,16 @@ export default function UsersPage() {
         />
         <button
           onClick={() => setIsModalOpen(true)}
+          onMouseEnter={(e) => (e.target.style.backgroundColor = "#218838")}
+          onMouseLeave={(e) => (e.target.style.backgroundColor = "#2563EB")}
           style={{
             padding: "8px 16px",
-            backgroundColor: "#28a745",
+            backgroundColor: "#2563EB",
             color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            transition: "background-color 0.3s ease",
           }}
         >
           Add User
@@ -126,12 +132,13 @@ export default function UsersPage() {
       >
         <thead>
           <tr style={{ backgroundColor: "#f2f2f2" }}>
-          <th
+            <th
               onClick={() => handleSort("id")}
               style={{
                 border: "1px solid #dee2e6",
                 padding: "12px",
                 cursor: "pointer",
+                textAlign: "center"
               }}
             >
               No {sortBy === "id" && (sortOrder === "asc" ? "▲" : "▼")}
@@ -201,14 +208,18 @@ export default function UsersPage() {
                   border: "1px solid #dee2e6",
                   padding: "8px",
                   verticalAlign: "top",
+                  textAlign: "center"
                 }}
               >
                 <button
                   onClick={() => handleEdit(user)}
                   style={{
-                    marginRight: "5px",
-                    padding: "4px 8px",
+                    marginRight: "15px",
+                    padding: "4px 9px 4px 9px",
                     backgroundColor: "#ffc107",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer",
                   }}
                 >
                   Edit
@@ -219,6 +230,9 @@ export default function UsersPage() {
                     padding: "4px 8px",
                     backgroundColor: "#dc3545",
                     color: "white",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer",
                   }}
                 >
                   Delete
@@ -311,16 +325,29 @@ export default function UsersPage() {
                   padding: "8px 16px",
                   backgroundColor: "#6c757d",
                   color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
                 }}
               >
                 Batal
               </button>
               <button
                 onClick={handleSubmit}
+                onMouseEnter={(e) =>
+                  (e.target.style.backgroundColor = "#218838")
+                }
+                onMouseLeave={(e) =>
+                  (e.target.style.backgroundColor = "#2563EB")
+                }
                 style={{
                   padding: "8px 16px",
-                  backgroundColor: "#28a745",
+                  backgroundColor: "#2563EB",
                   color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  transition: "background-color 0.3s ease",
                 }}
               >
                 {editingUser ? "Update" : "Simpan"}

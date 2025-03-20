@@ -112,10 +112,10 @@ export default function RoomPage() {
 
       {/* Tambah Button */}
       <button
-        className="bg-green-500 text-white px-4 py-2 rounded mb-9"
+        className="bg-green-500 text-white px-4 py-2 rounded mb-7 ml-389"
         onClick={() => setIsAddModalOpen(true)}
       >
-        Tambah
+        Add Room
       </button>
 
       {/* Table */}

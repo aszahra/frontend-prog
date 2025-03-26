@@ -20,14 +20,12 @@ export default function UsersPage() {
       .catch((error) => console.error("Error fetching users:", error));
   }, []);
 
-  // Filtering dengan useMemo
   const filteredUsers = useMemo(() => {
     return users.filter((user) =>
       user.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [users, searchTerm]);
 
-  // Sorting dengan useMemo
   const sortedUsers = useMemo(() => {
     if (!sortBy) return filteredUsers;
     return [...filteredUsers].sort((a, b) => {
@@ -36,14 +34,12 @@ export default function UsersPage() {
     });
   }, [filteredUsers, sortBy, sortOrder]);
 
-  // Paginasi dengan useMemo
   const paginatedUsers = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     const end = start + itemsPerPage;
     return sortedUsers.slice(start, end);
   }, [sortedUsers, currentPage, itemsPerPage]);
 
-  // Total halaman dengan useMemo
   const totalPages = useMemo(() => {
     return Math.ceil(sortedUsers.length / itemsPerPage);
   }, [sortedUsers, itemsPerPage]);
@@ -88,269 +84,194 @@ export default function UsersPage() {
   };
 
   return (
-    <div
-      style={{ marginTop: "20px", paddingLeft: "80px", paddingRight: "80px" }}
-    >
-      <h1>Daftar Pengguna</h1>
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-md p-6">
+        <h1 className="text-3xl font-bold text-gray-800 mb-10 text-center">
+          DAFTAR USER
+        </h1>
 
-      <div style={{ marginBottom: "20px", display: "flex", gap: "10px" }}>
-        <input
-          type="text"
-          placeholder="Cari berdasarkan nama..."
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            setCurrentPage(1);
-          }}
-          style={{ flex: 1, padding: "8px" }}
-        />
-        <button
-          onClick={() => setIsModalOpen(true)}
-          onMouseEnter={(e) => (e.target.style.backgroundColor = "#218838")}
-          onMouseLeave={(e) => (e.target.style.backgroundColor = "#2563EB")}
-          style={{
-            padding: "8px 16px",
-            backgroundColor: "#2563EB",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-            transition: "background-color 0.3s ease",
-          }}
-        >
-          Add User
-        </button>
-      </div>
-
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          border: "1px solid #dee2e6",
-          marginBottom: "20px",
-        }}
-      >
-        <thead>
-          <tr style={{ backgroundColor: "#f2f2f2" }}>
-            <th
-              onClick={() => handleSort("id")}
-              style={{
-                border: "1px solid #dee2e6",
-                padding: "12px",
-                cursor: "pointer",
-                textAlign: "center"
-              }}
-            >
-              No {sortBy === "id" && (sortOrder === "asc" ? "▲" : "▼")}
-            </th>
-            <th
-              onClick={() => handleSort("name")}
-              style={{
-                border: "1px solid #dee2e6",
-                padding: "12px",
-                cursor: "pointer",
-              }}
-            >
-              Nama {sortBy === "name" && (sortOrder === "asc" ? "▲" : "▼")}
-            </th>
-            <th
-              onClick={() => handleSort("email")}
-              style={{
-                border: "1px solid #dee2e6",
-                padding: "12px",
-                cursor: "pointer",
-              }}
-            >
-              Email {sortBy === "email" && (sortOrder === "asc" ? "▲" : "▼")}
-            </th>
-            <th
-              style={{
-                border: "1px solid #dee2e6",
-                padding: "12px",
-              }}
-            >
-              Action
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {paginatedUsers.map((user, index) => (
-            <tr key={user.id}>
-              <td
-                style={{
-                  border: "1px solid #dee2e6",
-                  padding: "8px",
-                  verticalAlign: "top",
-                }}
-              >
-                {(currentPage - 1) * itemsPerPage + index + 1}
-              </td>
-              <td
-                style={{
-                  border: "1px solid #dee2e6",
-                  padding: "8px",
-                  verticalAlign: "top",
-                }}
-              >
-                {user.name}
-              </td>
-              <td
-                style={{
-                  border: "1px solid #dee2e6",
-                  padding: "8px",
-                  verticalAlign: "top",
-                }}
-              >
-                {user.email}
-              </td>
-              <td
-                style={{
-                  border: "1px solid #dee2e6",
-                  padding: "8px",
-                  verticalAlign: "top",
-                  textAlign: "center"
-                }}
-              >
-                <button
-                  onClick={() => handleEdit(user)}
-                  style={{
-                    marginRight: "15px",
-                    padding: "4px 9px 4px 9px",
-                    backgroundColor: "#ffc107",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                  }}
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(user.id)}
-                  style={{
-                    padding: "4px 8px",
-                    backgroundColor: "#dc3545",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                  }}
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <div style={{ display: "flex", gap: "5px" }}>
-        <button
-          onClick={() => setCurrentPage(currentPage - 1)}
-          disabled={currentPage === 1}
-          style={{ padding: "8px" }}
-        >
-          Previous
-        </button>
-        {Array.from({ length: totalPages }, (_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrentPage(i + 1)}
-            style={{
-              padding: "8px",
-              backgroundColor: currentPage === i + 1 ? "#007bff" : "#f0f0f0",
-              color: currentPage === i + 1 ? "white" : "black",
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <input
+            type="text"
+            placeholder="Cari berdasarkan nama..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
             }}
+            className="flex-grow px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-white hover:text-blue-600 hover:border hover:border-blue-600 transition-all duration-200"
           >
-            {i + 1}
+            Add User
           </button>
-        ))}
-        <button
-          onClick={() => setCurrentPage(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          style={{ padding: "8px" }}
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="min-w-full border-collapse">
+            <thead>
+              <tr className="bg-gray-100">
+                <th
+                  onClick={() => handleSort("id")}
+                  className="border border-gray-200 px-4 py-3 text-left cursor-pointer"
+                >
+                  <div className="items-center text-center">
+                    No {sortBy === "id" && (sortOrder === "asc" ? "↑" : "↓")}
+                  </div>
+                </th>
+                <th
+                  onClick={() => handleSort("name")}
+                  className="border border-gray-200 px-4 py-3 text-left cursor-pointer"
+                >
+                  <div className="text-center items-center">
+                    Nama{" "}
+                    {sortBy === "name" && (sortOrder === "asc" ? "↑" : "↓")}
+                  </div>
+                </th>
+                <th
+                  onClick={() => handleSort("email")}
+                  className="border border-gray-200 px-4 py-3 text-left cursor-pointer"
+                >
+                  <div className="items-center text-center">
+                    Email{" "}
+                    {sortBy === "email" && (sortOrder === "asc" ? "↑" : "↓")}
+                  </div>
+                </th>
+                <th className="border border-gray-200 px-4 py-3 text-center">
+                  Action
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedUsers.map((user, index) => (
+                <tr key={user.id} className="hover:bg-gray-50">
+                  <td className="border border-gray-200 px-4 py-2 text-center">
+                    {(currentPage - 1) * itemsPerPage + index + 1}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2">
+                    {user.name}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2">
+                    {user.email}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2">
+                    <div className="flex gap-2 justify-center">
+                      <button
+                        onClick={() => handleEdit(user)}
+                        className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-white hover:text-yellow-500 hover:border hover:border-yellow-500 transition-all duration-200"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(user.id)}
+                        className="px-3 py-1 bg-red-500 text-white rounded hover:bg-white hover:text-red-500 hover:border hover:border-red-500 transition-all duration-200"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "left",
+            gap: "8px",
+            marginTop: "30px",
+          }}
         >
-          Next
-        </button>
+          <button
+            onClick={() => setCurrentPage(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-4 py-2 border rounded-md disabled:opacity-50"
+          >
+            Previous
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentPage(i + 1)}
+              className={`px-4 py-2 border rounded-md ${
+                currentPage === i + 1 ? "bg-blue-500 text-white" : "bg-white"
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))}
+          <button
+            onClick={() => setCurrentPage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 border rounded-md disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
       </div>
 
       {isModalOpen && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: "white",
-              padding: "20px",
-              borderRadius: "8px",
-              width: "400px",
-            }}
-          >
-            <h2>{editingUser ? "Edit Pengguna" : "Tambah Pengguna Baru"}</h2>
-            <div style={{ marginBottom: "15px" }}>
-              <label>Nama:</label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                style={{ width: "100%", padding: "8px", marginTop: "5px" }}
-              />
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center p-8">
+          {/* Modal Container */}
+          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
+            {/* Header */}
+            <h2 className="text-2xl font-bold mb-6 text-gray-800">
+              {editingUser ? "Edit Pengguna" : "Tambah User Baru"}
+            </h2>
+
+            {/* Form Fields */}
+            <div className="space-y-5">
+              {/* Nama Field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nama:
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Masukkan nama"
+                />
+              </div>
+
+              {/* Email Field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email:
+                </label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Masukkan email"
+                />
+              </div>
             </div>
-            <div style={{ marginBottom: "15px" }}>
-              <label>Email:</label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                style={{ width: "100%", padding: "8px", marginTop: "5px" }}
-              />
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                style={{
-                  padding: "8px 16px",
-                  backgroundColor: "#6c757d",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                Batal
-              </button>
-              <button
+
+            {/* Footer Buttons */}
+            <div className="flex justify-end gap-4 mt-8">
+            <button
                 onClick={handleSubmit}
-                onMouseEnter={(e) =>
-                  (e.target.style.backgroundColor = "#218838")
-                }
-                onMouseLeave={(e) =>
-                  (e.target.style.backgroundColor = "#2563EB")
-                }
-                style={{
-                  padding: "8px 16px",
-                  backgroundColor: "#2563EB",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  transition: "background-color 0.3s ease",
-                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-white hover:text-blue-600 hover:border hover:border-blue-600 transition-all duration-200"
+                // className="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200"
               >
                 {editingUser ? "Update" : "Simpan"}
+              </button>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="px-5 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition duration-200"
+              >
+                Batal
               </button>
             </div>
           </div>

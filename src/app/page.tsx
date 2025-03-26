@@ -1,6 +1,6 @@
-"use client";
+"use client"; // Untuk menggunakan Client Components (React hooks)
 
-// app/dashboard/page.tsx
+// Import dependencies
 import React, { useState } from "react";
 import {
   Chart as ChartJS,
@@ -15,6 +15,7 @@ import { Bar } from "react-chartjs-2";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css"; // Import CSS untuk react-calendar
 
+// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -71,144 +72,143 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="p-6">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
-        <p className="text-gray-600">Overview of your system</p>
-      </div>
-
-      {/* Statistik Utama */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        {/* Total Pemesanan */}
-        <div className="bg-green-100 shadow-md rounded-lg p-6 text-center">
-          <h2 className="text-xl font-bold text-green-800">Total Pemesanan</h2>
-          <p className="text-3xl font-bold text-green-900 mt-2">
-            {statsData.totalBookings}
-          </p>
+    <div className="min-h-screen bg-gray-50 py-10 px-6">
+      {/* Container Utama */}
+      <div className="max-w-[85rem] mx-auto space-y-10">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-gray-800">Dashboard</h1>
+          <p className="text-gray-600 mt-3">Selamat Datang di Aplikasi ASZ!</p>
         </div>
 
-        {/* Ruangan Tersedia */}
-        <div className="bg-blue-100 shadow-md rounded-lg p-6 text-center">
-          <h2 className="text-xl font-bold text-blue-800">Ruangan Tersedia</h2>
-          <p className="text-3xl font-bold text-blue-900 mt-2">
-            {statsData.availableRooms}
-          </p>
+        {/* Statistik Utama */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {/* Total Pemesanan */}
+          <div className="p-6 text-center border rounded-lg bg-green-100">
+            <h2 className="text-xl font-bold text-green-800">Total Pemesanan</h2>
+            <p className="text-3xl font-bold text-green-900 mt-2">
+              {statsData.totalBookings}
+            </p>
+          </div>
+
+          {/* Ruangan Tersedia */}
+          <div className="p-6 text-center border rounded-lg bg-blue-100">
+            <h2 className="text-xl font-bold text-blue-800">Ruangan Tersedia</h2>
+            <p className="text-3xl font-bold text-blue-900 mt-2">
+              {statsData.availableRooms}
+            </p>
+          </div>
+
+          {/* Pendapatan Bulanan */}
+          <div className="p-6 text-center border rounded-lg bg-purple-100">
+            <h2 className="text-xl font-bold text-purple-800">Pendapatan Bulanan</h2>
+            <p className="text-3xl font-bold text-purple-900 mt-2">
+              {statsData.monthlyRevenue}
+            </p>
+          </div>
+
+          {/* Total Pengguna */}
+          <div className="p-6 text-center border rounded-lg bg-yellow-100">
+            <h2 className="text-xl font-bold text-yellow-800">Total Pengguna</h2>
+            <p className="text-3xl font-bold text-yellow-900 mt-2">
+              {statsData.totalUsers}
+            </p>
+          </div>
         </div>
 
-        {/* Pendapatan Bulanan */}
-        <div className="bg-purple-100 shadow-md rounded-lg p-6 text-center">
-          <h2 className="text-xl font-bold text-purple-800">Pendapatan Bulanan</h2>
-          <p className="text-3xl font-bold text-purple-900 mt-2">
-            {statsData.monthlyRevenue}
-          </p>
+        {/* Grafik Pemesanan */}
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold text-gray-800">Grafik Pemesanan</h2>
+          <div className="h-96">
+            <Bar
+              data={bookingChartData}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+              }}
+            />
+          </div>
         </div>
 
-        {/* Total Pengguna */}
-        <div className="bg-yellow-100 shadow-md rounded-lg p-6 text-center">
-          <h2 className="text-xl font-bold text-yellow-800">Total Pengguna</h2>
-          <p className="text-3xl font-bold text-yellow-900 mt-2">
-            {statsData.totalUsers}
-          </p>
-        </div>
-      </div>
-
-      {/* Grafik Pemesanan */}
-      <div className="bg-white shadow-md rounded-lg p-6 mb-8">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">
-          Grafik Pemesanan
-        </h2>
-        <div className="max-w-full h-64">
-          <Bar
-            data={bookingChartData}
-            options={{
-              responsive: true,
-              maintainAspectRatio: false,
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Grafik Pendapatan */}
-      <div className="bg-white shadow-md rounded-lg p-6 mb-8">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">
-          Grafik Pendapatan
-        </h2>
-        <div className="max-w-full h-64">
-          <Bar
-            data={revenueChartData}
-            options={{
-              responsive: true,
-              maintainAspectRatio: false,
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Kalender dan Tabel Pemesanan Terbaru */}
-      <div className="flex flex-col md:flex-row gap-4 md:gap-0">
-        {/* Kalender Ketersediaan */}
-        <div className="w-full md:w-1/2 bg-white shadow-md rounded-lg p-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">
-            Kalender Ketersediaan
-          </h2>
-          <Calendar
-            onChange={setDate}
-            value={date}
-            className="rounded-lg shadow-md"
-          />
-          <p className="mt-4 text-gray-600">
-            Tanggal dipilih: {date.toDateString()}
-          </p>
+        {/* Grafik Pendapatan */}
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold text-gray-800">Grafik Pendapatan</h2>
+          <div className="h-96">
+            <Bar
+              data={revenueChartData}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+              }}
+            />
+          </div>
         </div>
 
-        {/* Tabel Pemesanan Terbaru */}
-        <div className="w-full md:w-1/2 bg-white shadow-md rounded-lg overflow-hidden">
-          <h2 className="p-6 text-xl font-bold text-gray-800 border-b">
-            Pemesanan Terbaru
-          </h2>
-          <table className="min-w-full divide-y divide-gray-200">
-            {/* Table Header */}
-            <thead className="bg-gray-50">
-              <tr>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  User
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Room
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Date
-                </th>
-              </tr>
-            </thead>
+        {/* Kalender dan Tabel Pemesanan Terbaru */}
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Kalender Ketersediaan */}
+          <div className="w-full md:w-1/2 space-y-4">
+            <h2 className="text-2xl font-bold text-gray-800">
+              Kalender Ketersediaan
+            </h2>
+            <Calendar
+              onChange={setDate}
+              value={date}
+              className="rounded-lg shadow-md"
+            />
+            <p className="mt-4 text-gray-600">
+              Tanggal dipilih: {date.toDateString()}
+            </p>
+          </div>
 
-            {/* Table Body */}
-            <tbody className="divide-y divide-gray-200 bg-white">
-              {recentBookings.map((booking) => (
-                <tr key={booking.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {booking.user}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {booking.room}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {booking.date}
-                  </td>
+          {/* Tabel Pemesanan Terbaru */}
+          <div className="w-full md:w-1/2 space-y-4">
+            <h2 className="text-2xl font-bold text-gray-800">
+              Pemesanan Terbaru
+            </h2>
+            <table className="min-w-full divide-y divide-gray-200">
+              {/* Table Header */}
+              <thead className="bg-gray-50">
+                <tr>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    User
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Room
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Date
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+
+              {/* Table Body */}
+              <tbody className="divide-y divide-gray-200 bg-white">
+                {recentBookings.map((booking) => (
+                  <tr key={booking.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {booking.user}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {booking.room}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {booking.date}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

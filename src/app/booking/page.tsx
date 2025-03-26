@@ -1,350 +1,290 @@
 "use client";
+import { useEffect, useState, useMemo } from "react";
 
-import { useState, useMemo, useEffect } from "react";
-
-interface Booking {
-  id: number;
-  name?: string;
-  room?: string;
-  date?: string;
-  status?: string;
-}
-
-export default function BookingPage() {
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState("id");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const [page, setPage] = useState(1);
-
-  // State untuk form input
-  const [newBooking, setNewBooking] = useState({
-    name: "",
-    room: "",
-    date: "",
-    status: "",
+export default function RoomsPage() {
+  const [bookings, setBookings] = useState([]);
+  const [formData, setFormData] = useState({
+    nama: "",
+    ruangan: "", // Default value untuk dropdown diubah menjadi kosong
+    tanggal: "",
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10); // Menampilkan 10 item per halaman
+  const [searchQuery, setSearchQuery] = useState(""); // State untuk fitur pencarian
+  const [sortOrder, setSortOrder] = useState("asc"); // State untuk urutan sorting
 
-  const pageSize = 5;
-
-  // Fetch data dari file JSON (pastikan ada di public/bookings.json)
   useEffect(() => {
-    fetch("/bookings.json") // Pastikan file ini ada di public/bookings.json
-      .then((res) => res.json())
-      .then((data) => setBookings(data));
+    fetch("/bookings.json") // Pastikan file bookings.json ada di folder public
+      .then((response) => response.json())
+      .then((data) => setBookings(data))
+      .catch((error) => console.error("Error fetching bookings:", error));
   }, []);
 
-  // Filtering data berdasarkan pencarian
-  const filteredData = useMemo(() => {
-    let filtered = bookings.filter(
-      (item) =>
-        (item.name?.toLowerCase() || "").includes(search.toLowerCase()) ||
-        (item.room?.toLowerCase() || "").includes(search.toLowerCase()) ||
-        (item.status?.toLowerCase() || "").includes(search.toLowerCase())
-    );
-
-    // Sorting data
-    filtered.sort((a, b) => {
-      const aValue = a[sortBy]?.toString().toLowerCase() || "";
-      const bValue = b[sortBy]?.toString().toLowerCase() || "";
-
-      if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
-      if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
-      return 0;
-    });
-
-    return filtered;
-  }, [search, sortBy, sortOrder, bookings]);
-
-  // Pagination logic
-  const paginatedData = useMemo(() => {
-    const startIndex = (page - 1) * pageSize;
-    return filteredData.slice(startIndex, startIndex + pageSize);
-  }, [filteredData, page]);
-
-  const totalPages = Math.ceil(filteredData.length / pageSize);
-
-  // Handle sorting
-  const handleSort = (field: string) => {
-    if (sortBy === field) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      setSortBy(field);
-      setSortOrder("asc");
-    }
-  };
-
-  // Handle form input changes
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setNewBooking({ ...newBooking, [name]: value });
-  };
-
-  // Handle submit form
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  // Handle form submission
+  const handleSubmit = (e) => {
     e.preventDefault();
-
-    // Validasi input
-    if (!newBooking.name || !newBooking.room || !newBooking.date || !newBooking.status) {
-      alert("Please fill in all fields.");
+    if (!formData.nama || !formData.ruangan || !formData.tanggal) {
+      alert("Semua field harus diisi!");
       return;
     }
 
-    // Tambahkan data baru ke daftar booking
-    const newId = bookings.length > 0 ? Math.max(...bookings.map((b) => b.id)) + 1 : 1;
-    const newBookingData = { id: newId, ...newBooking };
-    setBookings([...bookings, newBookingData]);
+    const newBooking = {
+      id: bookings.length ? Math.max(...bookings.map((b) => b.id)) + 1 : 1,
+      ...formData,
+      status: "Pending", // Default status saat menambahkan booking baru
+    };
 
-    // Reset form
-    setNewBooking({
-      name: "",
-      room: "",
-      date: "",
-      status: "",
+    setBookings([...bookings, newBooking]);
+    setFormData({ nama: "", ruangan: "", tanggal: "" }); // Reset form
+  };
+
+  // Update status
+  const updateStatus = (id, newStatus) => {
+    setBookings(
+      bookings.map((booking) =>
+        booking.id === id ? { ...booking, status: newStatus } : booking
+      )
+    );
+  };
+
+  // Toggle sorting order
+  const toggleSortOrder = () => {
+    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+  };
+
+  // Filter bookings based on search query
+  const filteredBookings = useMemo(() => {
+    if (!searchQuery) return bookings; // Jika tidak ada query pencarian, tampilkan semua data
+    return bookings.filter((booking) =>
+      booking.nama.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [bookings, searchQuery]);
+
+  // Sort bookings by name
+  const sortedBookings = useMemo(() => {
+    return [...filteredBookings].sort((a, b) => {
+      if (sortOrder === "asc") {
+        return a.nama.localeCompare(b.nama);
+      } else {
+        return b.nama.localeCompare(a.nama);
+      }
     });
+  }, [filteredBookings, sortOrder]);
 
-    // Reset halaman ke 1
-    setPage(1);
-  };
+  // Paginate bookings
+  const paginatedBookings = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return sortedBookings.slice(start, end);
+  }, [sortedBookings, currentPage, itemsPerPage]);
 
-  // Fungsi untuk mendapatkan warna latar belakang berdasarkan status
-  const getStatusColor = (status: string | undefined) => {
-    switch (status?.toLowerCase()) {
-      case "confirmed":
-        return "bg-green-500 text-white";
-      case "pending":
-        return "bg-yellow-500 text-black";
-      case "cancelled":
-        return "bg-red-500 text-white";
-      default:
-        return "bg-gray-300 text-gray-700";
-    }
-  };
+  // Calculate total pages for pagination
+  const totalPages = useMemo(() => {
+    return Math.ceil(sortedBookings.length / itemsPerPage);
+  }, [sortedBookings, itemsPerPage]);
 
   return (
-    <div className="p-6 bg-gradient-to-b from-gray-100 to-white min-h-screen">
-      <h1 className="text-3xl font-bold text-center text-blue-600 mb-8">
-        Booking List
-      </h1>
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      {/* Form Section */}
+      <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-md p-6 mb-8">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+          FORM BOOKING RUANGAN
+        </h1>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Nama Field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Nama:
+            </label>
+            <input
+              type="text"
+              value={formData.nama}
+              onChange={(e) =>
+                setFormData({ ...formData, nama: e.target.value })
+              }
+              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Masukkan nama"
+              required
+            />
+          </div>
 
-      {/* Card untuk Form Input */}
-      <div className="bg-white p-8 rounded-2xl shadow-lg mb-8">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-          Add New Booking
-        </h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
+          {/* Ruangan Dropdown */}
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Name
+              Ruangan:
             </label>
-            <input
-              type="text"
-              name="name"
-              value={newBooking.name}
-              onChange={handleInputChange}
-              className="w-full p-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              placeholder="Enter name"
+            <select
+              value={formData.ruangan}
+              onChange={(e) =>
+                setFormData({ ...formData, ruangan: e.target.value })
+              }
+              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
-            />
+            >
+              <option value="">-- Pilih Ruangan --</option> {/* Placeholder */}
+              <option value="Room A">Room A</option>
+              <option value="Room B">Room B</option>
+              <option value="Room C">Room C</option>
+              <option value="Room D">Room D</option>
+            </select>
           </div>
-          <div className="mb-4">
+
+          {/* Tanggal Field */}
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Room
-            </label>
-            <input
-              type="text"
-              name="room"
-              value={newBooking.room}
-              onChange={handleInputChange}
-              className="w-full p-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              placeholder="Enter room"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Date
+              Tanggal:
             </label>
             <input
               type="date"
-              name="date"
-              value={newBooking.date}
-              onChange={handleInputChange}
-              className="w-full p-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              value={formData.tanggal}
+              onChange={(e) =>
+                setFormData({ ...formData, tanggal: e.target.value })
+              }
+              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Status
-            </label>
-            <select
-              name="status"
-              value={newBooking.status}
-              onChange={handleInputChange}
-              className="w-full p-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              required
-            >
-              <option value="">Select Status</option>
-              <option value="Confirmed">Confirmed</option>
-              <option value="Pending">Pending</option>
-              <option value="Cancelled">Cancelled</option>
-            </select>
-          </div>
+
+          {/* Submit Button */}
           <button
             type="submit"
-            className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition duration-300"
+            className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-white hover:text-blue-600 hover:border hover:border-blue-600 transition-all duration-200"
           >
-            Add Booking
+            Simpan
           </button>
         </form>
       </div>
 
-      {/* Search Bar */}
-      <div className="mb-6">
-        <input
-          type="text"
-          placeholder="Cari nama, ruangan, atau status..."
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1); // Reset ke halaman pertama saat melakukan pencarian
-          }}
-          className="w-full p-3 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none"
-        />
-      </div>
+      {/* Table Section */}
+      <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-md p-6">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+          DAFTAR BOOKING RUANGAN
+        </h1>
 
-      {/* Booking Table */}
-      <div className="bg-white p-6 rounded-2xl shadow-lg overflow-x-auto">
-        <table className="w-full border-collapse border border-gray-200">
-          <thead>
-            <tr>
-              <th
-                className="border border-gray-200 p-3 cursor-pointer bg-gray-100 text-gray-700 font-medium"
-                onClick={() => handleSort("id")}
-              >
-                ID{" "}
-                {sortBy === "id" ? (
-                  sortOrder === "asc" ? (
-                    "↑"
+        {/* Search Bar */}
+        <div className="mb-4">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Cari berdasarkan nama..."
+            className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="min-w-full border-collapse">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="border border-gray-200 px-4 py-3 text-center">
+                  No
+                </th>
+                <th
+                  className="border border-gray-200 px-4 py-3 text-center cursor-pointer"
+                  onClick={toggleSortOrder} // Sorting by nama
+                >
+                  Nama{" "}
+                  {sortOrder === "asc" ? (
+                    <span>&uarr;</span>
                   ) : (
-                    "↓"
-                  )
-                ) : (
-                  ""
-                )}
-              </th>
-              <th
-                className="border border-gray-200 p-3 cursor-pointer bg-gray-100 text-gray-700 font-medium"
-                onClick={() => handleSort("name")}
-              >
-                Nama{" "}
-                {sortBy === "name" ? (
-                  sortOrder === "asc" ? (
-                    "↑"
-                  ) : (
-                    "↓"
-                  )
-                ) : (
-                  ""
-                )}
-              </th>
-              <th
-                className="border border-gray-200 p-3 cursor-pointer bg-gray-100 text-gray-700 font-medium"
-                onClick={() => handleSort("room")}
-              >
-                Ruangan{" "}
-                {sortBy === "room" ? (
-                  sortOrder === "asc" ? (
-                    "↑"
-                  ) : (
-                    "↓"
-                  )
-                ) : (
-                  ""
-                )}
-              </th>
-              <th
-                className="border border-gray-200 p-3 cursor-pointer bg-gray-100 text-gray-700 font-medium"
-                onClick={() => handleSort("date")}
-              >
-                Tanggal{" "}
-                {sortBy === "date" ? (
-                  sortOrder === "asc" ? (
-                    "↑"
-                  ) : (
-                    "↓"
-                  )
-                ) : (
-                  ""
-                )}
-              </th>
-              <th
-                className="border border-gray-200 p-3 cursor-pointer bg-gray-100 text-gray-700 font-medium"
-                onClick={() => handleSort("status")}
-              >
-                Status{" "}
-                {sortBy === "status" ? (
-                  sortOrder === "asc" ? (
-                    "↑"
-                  ) : (
-                    "↓"
-                  )
-                ) : (
-                  ""
-                )}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedData.map((item) => (
-              <tr key={item.id} className="hover:bg-gray-50">
-                <td className="border border-gray-200 p-3 text-center">
-                  {item.id}
-                </td>
-                <td className="border border-gray-200 p-3 text-center">
-                  {item.name || "-"}
-                </td>
-                <td className="border border-gray-200 p-3 text-center">
-                  {item.room || "-"}
-                </td>
-                <td className="border border-gray-200 p-3 text-center">
-                  {item.date || "-"}
-                </td>
-                <td className="border border-gray-200 p-3 text-center">
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(item.status)}`}
-                  >
-                    {item.status || "-"}
-                  </span>
-                </td>
+                    <span>&darr;</span>
+                  )}
+                </th>
+                <th className="border border-gray-200 px-4 py-3 text-center">
+                  Ruangan
+                </th>
+                <th className="border border-gray-200 px-4 py-3 text-center">
+                  Tanggal
+                </th>
+                <th className="border border-gray-200 px-4 py-3 text-center">
+                  Status
+                </th>
+                <th className="border border-gray-200 px-4 py-3 text-center">
+                  Action
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {paginatedBookings.map((booking, index) => (
+                <tr key={booking.id} className="hover:bg-gray-50">
+                  <td className="border border-gray-200 px-4 py-2 text-center">
+                    {(currentPage - 1) * itemsPerPage + index + 1}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2 text-left">
+                    {booking.nama}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2 text-center">
+                    {booking.ruangan}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2 text-center">
+                    {new Date(booking.tanggal).toLocaleDateString()}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2 text-center">
+                    {booking.status === "Confirmed" ? (
+                      <span className="text-green-500">Confirmed</span>
+                    ) : booking.status === "Pending" ? (
+                      <span className="text-yellow-500">Pending</span>
+                    ) : (
+                      <span className="text-red-500">Cancelled</span>
+                    )}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2 text-center">
+                    <div className="flex justify-center gap-2">
+                      <button
+                        onClick={() => updateStatus(booking.id, "Confirmed")}
+                        className="px-3 py-1 bg-green-500 text-white rounded hover:bg-white hover:text-green-500 hover:border hover:border-green-500 transition-all duration-200"
+                      >
+                        Confirm
+                      </button>
+                      <button
+                        onClick={() => updateStatus(booking.id, "Cancelled")}
+                        className="px-3 py-1 bg-red-500 text-white rounded hover:bg-white hover:text-red-500 hover:border hover:border-red-500 transition-all duration-200"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-      {/* Pagination Controls */}
-      <div className="flex justify-between mt-6">
-        <button
-          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-          disabled={page === 1}
-          className="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg disabled:opacity-50"
+        {/* Pagination */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "left",
+            gap: "8px",
+            marginTop: "30px",
+          }}
         >
-          Previous
-        </button>
-        <span className="text-gray-700">
-          Page {page} of {totalPages}
-        </span>
-        <button
-          onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-          disabled={page === totalPages}
-          className="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg disabled:opacity-50"
-        >
-          Next
-        </button>
+          <button
+            onClick={() => setCurrentPage(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-4 py-2 border rounded-md disabled:opacity-50"
+          >
+            Previous
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentPage(i + 1)}
+              className={`px-4 py-2 border rounded-md ${
+                currentPage === i + 1 ? "bg-blue-500 text-white" : "bg-white"
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))}
+          <button
+            onClick={() => setCurrentPage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 border rounded-md disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );

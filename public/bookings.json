@@ -1,8 +1,58 @@
 [
-    { "id": 1, "room": "Room A", "name": "John Doe", "date": "2023-11-01", "checkOutDate": "2023-11-05", "status": "Confirmed" },
-    { "id": 2, "room": "Room B", "name": "Jane Smith", "date": "2023-11-02", "checkOutDate": "2023-11-06", "status": "Pending" },
-    { "id": 3, "room": "Room C", "name": "Alice Johnson", "date": "2023-11-03", "checkOutDate": "2023-11-07", "status": "Cancelled" },
-    { "id": 4, "room": "Room D", "name": "Bob Brown", "date": "2023-11-04", "checkOutDate": "2023-11-08", "status": "Confirmed" },
-    { "id": 5, "room": "Room E", "name": "Charlie Davis", "date": "2023-11-05", "checkOutDate": "2023-11-09", "status": "Pending" },
-    { "id": 6, "room": "Room F", "name": "Eve White", "date": "2023-11-06", "checkOutDate": "2023-11-10", "status": "Confirmed" }
-  ]
+  {
+    "id": 1,
+    "nama": "John Doe",
+    "ruangan": "Room A",
+    "tanggal": "2023-10-15",
+    "status": "Confirmed"
+  },
+  {
+    "id": 2,
+    "nama": "Jane Smith",
+    "ruangan": "Room B",
+    "tanggal": "2023-10-16",
+    "status": "Pending"
+  },
+  {
+    "id": 3,
+    "nama": "Alice Johnson",
+    "ruangan": "Room C",
+    "tanggal": "2023-10-17",
+    "status": "Cancelled"
+  },
+  {
+    "id": 4,
+    "nama": "Bob Brown",
+    "ruangan": "Room D",
+    "tanggal": "2023-10-18",
+    "status": "Confirmed"
+  },
+  {
+    "id": 5,
+    "nama": "Charlie Davis",
+    "ruangan": "Room A",
+    "tanggal": "2023-10-19",
+    "status": "Pending"
+  },
+  {
+    "id": 6,
+    "nama": "Eve White",
+    "ruangan": "Room B",
+    "tanggal": "2023-10-20",
+    "status": "Cancelled"
+  },
+  {
+    "id": 7,
+    "nama": "Frank Wilson",
+    "ruangan": "Room C",
+    "tanggal": "2023-10-21",
+    "status": "Confirmed"
+  },
+  {
+    "id": 8,
+    "nama": "Grace Lee",
+    "ruangan": "Room D",
+    "tanggal": "2023-10-22",
+    "status": "Pending"
+  }
+]

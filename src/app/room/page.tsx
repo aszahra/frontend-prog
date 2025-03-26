@@ -1,375 +1,398 @@
 "use client";
+import { useEffect, useState, useMemo } from "react";
 
-import React, { useState, useEffect } from "react";
-
-export default function RoomPage() {
-  const [data, setData] = useState([]);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    id: null,
-    nama: "",
-    kapasitas: 0,
-    kategori: "",
-    harga: 0,
-    status: "",
-  });
+export default function RoomsPage() {
+  const [rooms, setRooms] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortConfig, setSortConfig] = useState({ key: "nama", direction: "asc" });
   const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 5;
+  const [itemsPerPage] = useState(5); // Menampilkan 5 item per halaman
+  const [sortBy, setSortBy] = useState(null);
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    nama: "",
+    kapasitas: "",
+    kategori: "",
+    harga: "",
+    status: "Available",
+  });
+  const [editingRoom, setEditingRoom] = useState(null);
 
-  // Fetch data dari room.json
+  // Fetch data from room.json
   useEffect(() => {
-    async function fetchData() {
-      const response = await fetch("/room.json");
-      const jsonData = await response.json();
-      setData(jsonData);
-    }
-    fetchData();
+    fetch("/rooms.json")
+      .then((response) => response.json())
+      .then((data) => setRooms(data))
+      .catch((error) => console.error("Error fetching rooms:", error));
   }, []);
 
-  // Filtering data berdasarkan search term
-  const filteredData = data.filter((item) =>
-    Object.values(item).some((val) =>
-      String(val).toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
-
-  // Sorting data
-  const sortedData = [...filteredData].sort((a, b) => {
-    if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === "asc" ? -1 : 1;
-    if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === "asc" ? 1 : -1;
-    return 0;
-  });
-
-  // Pagination
-  const paginatedData = sortedData.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
-  );
-
-  const handleSort = (key) => {
-    let direction = "asc";
-    if (sortConfig.key === key && sortConfig.direction === "asc") {
-      direction = "desc";
-    }
-    setSortConfig({ key, direction });
-  };
-
-  const handleApprove = (id) => {
-    alert(`Approved room with ID: ${id}`);
-  };
-
-  const handleReject = (id) => {
-    alert(`Rejected room with ID: ${id}`);
-  };
-
-  const handleDelete = (id) => {
-    if (confirm("Are you sure you want to delete this record?")) {
-      setData(data.filter((item) => item.id !== id));
-    }
-  };
-
-  const openEditModal = (id) => {
-    const roomToEdit = data.find((item) => item.id === id);
-    setFormData(roomToEdit);
-    setIsEditModalOpen(true);
-  };
-
-  const handleAddSubmit = (e) => {
-    e.preventDefault();
-    const newData = {
-      ...formData,
-      id: data.length + 1,
-    };
-    setData((prevData) => [...prevData, newData]);
-    setIsAddModalOpen(false);
-    setFormData({ id: null, nama: "", kapasitas: 0, kategori: "", harga: 0, status: "" });
-  };
-
-  const handleEditSubmit = (e) => {
-    e.preventDefault();
-    setData((prevData) =>
-      prevData.map((item) => (item.id === formData.id ? formData : item))
+  // Filter rooms based on search term
+  const filteredRooms = useMemo(() => {
+    return rooms.filter((room) =>
+      room.nama.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    setIsEditModalOpen(false);
-    setFormData({ id: null, nama: "", kapasitas: 0, kategori: "", harga: 0, status: "" });
+  }, [rooms, searchTerm]);
+
+  // Sort rooms based on column and order
+  const sortedRooms = useMemo(() => {
+    if (!sortBy) return filteredRooms;
+    return [...filteredRooms].sort((a, b) => {
+      const order = sortOrder === "asc" ? 1 : -1;
+      if (typeof a[sortBy] === "string") {
+        return a[sortBy].localeCompare(b[sortBy]) * order;
+      }
+      return (a[sortBy] - b[sortBy]) * order;
+    });
+  }, [filteredRooms, sortBy, sortOrder]);
+
+  // Paginate rooms
+  const paginatedRooms = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return sortedRooms.slice(start, end);
+  }, [sortedRooms, currentPage, itemsPerPage]);
+
+  // Calculate total pages for pagination
+  const totalPages = useMemo(() => {
+    return Math.ceil(sortedRooms.length / itemsPerPage);
+  }, [sortedRooms, itemsPerPage]);
+
+  // Handle sorting
+  const handleSort = (column) => {
+    setSortBy(column);
+    setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+  };
+
+  // Handle delete action
+  const handleDelete = (id) => {
+    if (window.confirm("Are you sure you want to delete this room?")) {
+      setRooms(rooms.filter((room) => room.id !== id));
+    }
+  };
+
+  // Handle edit action
+  const handleEdit = (room) => {
+    setEditingRoom(room);
+    setFormData({
+      nama: room.nama,
+      kapasitas: room.kapasitas,
+      kategori: room.kategori,
+      harga: room.harga,
+      status: room.status,
+    });
+    setIsModalOpen(true);
+  };
+
+  // Handle form submission (add/edit room)
+  const handleSubmit = () => {
+    if (!formData.nama || !formData.kapasitas || !formData.kategori || !formData.harga) {
+      alert("Semua field harus diisi!");
+      return;
+    }
+    if (editingRoom) {
+      setRooms(
+        rooms.map((room) =>
+          room.id === editingRoom.id ? { ...room, ...formData } : room
+        )
+      );
+    } else {
+      const newId = rooms.length ? Math.max(...rooms.map((r) => r.id)) + 1 : 1;
+      setRooms([...rooms, { id: newId, ...formData }]);
+    }
+    setIsModalOpen(false);
+    setFormData({ nama: "", kapasitas: "", kategori: "", harga: "", status: "Available" });
+    setEditingRoom(null);
+  };
+
+  // Handle approve action with validation
+  const handleApprove = (id) => {
+    if (window.confirm("Apakah Anda yakin ingin menyetujui ruangan ini?")) {
+      setRooms(rooms.map((room) => (room.id === id ? { ...room, status: "Available" } : room)));
+    }
+  };
+
+  // Handle reject action with validation
+  const handleReject = (id) => {
+    if (window.confirm("Apakah Anda yakin ingin menolak ruangan ini?")) {
+      setRooms(rooms.map((room) => (room.id === id ? { ...room, status: "Unavailable" } : room)));
+    }
   };
 
   return (
-    <div className="pt-8 pr-30 pl-30">
-      <h1 className="text-2xl font-bold mb-4">Room Management</h1>
-
-      {/* Search Bar */}
-      <input
-        type="text"
-        placeholder="Search..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="border p-2 mb-4 w-full"
-      />
-
-      {/* Tambah Button */}
-      <button
-        className="bg-green-500 text-white px-4 py-2 rounded mb-7 ml-389"
-        onClick={() => setIsAddModalOpen(true)}
-      >
-        Add Room
-      </button>
-
-      {/* Table */}
-      <table className="min-w-full border-collapse">
-        <thead>
-          <tr>
-            <th
-              className="border p-2 cursor-pointer"
-              onClick={() => handleSort("nama")}
-            >
-              Nama {sortConfig.key === "nama" && (sortConfig.direction === "asc" ? "🔼" : "🔽")}
-            </th>
-            <th
-              className="border p-2 cursor-pointer"
-              onClick={() => handleSort("kapasitas")}
-            >
-              Kapasitas{" "}
-              {sortConfig.key === "kapasitas" && (sortConfig.direction === "asc" ? "🔼" : "🔽")}
-            </th>
-            <th
-              className="border p-2 cursor-pointer"
-              onClick={() => handleSort("kategori")}
-            >
-              Kategori{" "}
-              {sortConfig.key === "kategori" && (sortConfig.direction === "asc" ? "🔼" : "🔽")}
-            </th>
-            <th
-              className="border p-2 cursor-pointer"
-              onClick={() => handleSort("harga")}
-            >
-              Harga{" "}
-              {sortConfig.key === "harga" && (sortConfig.direction === "asc" ? "🔼" : "🔽")}
-            </th>
-            <th
-              className="border p-2 cursor-pointer"
-              onClick={() => handleSort("status")}
-            >
-              Status{" "}
-              {sortConfig.key === "status" && (sortConfig.direction === "asc" ? "🔼" : "🔽")}
-            </th>
-            <th className="border p-2">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {paginatedData.map((row) => (
-            <tr key={row.id}>
-              <td className="border p-2">{row.nama}</td>
-              <td className="border p-2">{row.kapasitas}</td>
-              <td className="border p-2">{row.kategori}</td>
-              <td className="border p-2">{row.harga}</td>
-              <td className="border p-2">{row.status}</td>
-              <td className="border p-2">
-                <div className="flex gap-2">
-                  <button
-                    className="bg-green-500 text-white px-2 py-1 rounded"
-                    onClick={() => handleApprove(row.id)}
-                  >
-                    Approve
-                  </button>
-                  <button
-                    className="bg-red-500 text-white px-2 py-1 rounded"
-                    onClick={() => handleReject(row.id)}
-                  >
-                    Reject
-                  </button>
-                  <button
-                    className="bg-blue-500 text-white px-2 py-1 rounded"
-                    onClick={() => openEditModal(row.id)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="bg-red-600 text-white px-2 py-1 rounded"
-                    onClick={() => handleDelete(row.id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {/* Pagination */}
-      <div className="flex justify-between mt-4">
-        <button
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-          className="px-4 py-2 bg-gray-300 disabled:bg-gray-100"
-        >
-          Previous
-        </button>
-        <span>
-          Page {currentPage} of {Math.ceil(sortedData.length / rowsPerPage)}
-        </span>
-        <button
-          onClick={() =>
-            setCurrentPage((prev) => Math.min(prev + 1, Math.ceil(sortedData.length / rowsPerPage)))
-          }
-          disabled={currentPage === Math.ceil(sortedData.length / rowsPerPage)}
-          className="px-4 py-2 bg-gray-300 disabled:bg-gray-100"
-        >
-          Next
-        </button>
-      </div>
-
-      {/* Modal Tambah */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <form onSubmit={handleAddSubmit} className="bg-white p-6 rounded shadow-lg">
-            <h2 className="text-xl font-bold mb-4">Tambah Room</h2>
-            <div className="mb-2">
-              <label>Nama:</label>
-              <input
-                type="text"
-                value={formData.nama}
-                onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
-                className="border p-2 w-full"
-                required
-              />
-            </div>
-            <div className="mb-2">
-              <label>Kapasitas:</label>
-              <input
-                type="number"
-                value={formData.kapasitas}
-                onChange={(e) =>
-                  setFormData({ ...formData, kapasitas: parseInt(e.target.value) })
-                }
-                className="border p-2 w-full"
-                required
-              />
-            </div>
-            <div className="mb-2">
-              <label>Kategori:</label>
-              <input
-                type="text"
-                value={formData.kategori}
-                onChange={(e) => setFormData({ ...formData, kategori: e.target.value })}
-                className="border p-2 w-full"
-                required
-              />
-            </div>
-            <div className="mb-2">
-              <label>Harga:</label>
-              <input
-                type="number"
-                value={formData.harga}
-                onChange={(e) => setFormData({ ...formData, harga: parseInt(e.target.value) })}
-                className="border p-2 w-full"
-                required
-              />
-            </div>
-            <div className="mb-2">
-              <label>Status:</label>
-              <select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="border p-2 w-full"
-                required
-              >
-                <option value="Available">Available</option>
-                <option value="Unavailable">Unavailable</option>
-              </select>
-            </div>
-            <div className="flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setIsAddModalOpen(false)}
-                className="px-4 py-2 bg-gray-300"
-              >
-                Cancel
-              </button>
-              <button type="submit" className="px-4 py-2 bg-blue-500 text-white">
-                Save
-              </button>
-            </div>
-          </form>
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-md p-6">
+        <h1 className="text-3xl font-bold text-gray-800 mb-10 text-center">
+          DAFTAR ROOM
+        </h1>
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <input
+            type="text"
+            placeholder="Cari berdasarkan nama..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="flex-grow px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-white hover:text-blue-600 hover:border hover:border-blue-600 transition-all duration-200"
+          >
+            Add Room
+          </button>
         </div>
-      )}
-
-      {/* Modal Edit */}
-      {isEditModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <form onSubmit={handleEditSubmit} className="bg-white p-6 rounded shadow-lg">
-            <h2 className="text-xl font-bold mb-4">Edit Room</h2>
-            <div className="mb-2">
-              <label>Nama:</label>
-              <input
-                type="text"
-                value={formData.nama}
-                onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
-                className="border p-2 w-full"
-                required
-              />
+        <div className="overflow-x-auto">
+          <table className="min-w-full border-collapse">
+            <thead>
+              <tr className="bg-gray-100">
+                <th
+                  onClick={() => handleSort("id")}
+                  className="border border-gray-200 px-4 py-3 text-left cursor-pointer"
+                >
+                  <div className="items-center text-center">
+                    No {sortBy === "id" && (sortOrder === "asc" ? "↑" : "↓")}
+                  </div>
+                </th>
+                <th
+                  onClick={() => handleSort("nama")}
+                  className="border border-gray-200 px-4 py-3 text-left cursor-pointer"
+                >
+                  <div className="text-center items-center">
+                    Nama{" "}
+                    {sortBy === "nama" && (sortOrder === "asc" ? "↑" : "↓")}
+                  </div>
+                </th>
+                <th
+                  onClick={() => handleSort("kapasitas")}
+                  className="border border-gray-200 px-4 py-3 text-left cursor-pointer"
+                >
+                  <div className="text-center items-center">
+                    Kapasitas{" "}
+                    {sortBy === "kapasitas" && (sortOrder === "asc" ? "↑" : "↓")}
+                  </div>
+                </th>
+                <th
+                  onClick={() => handleSort("kategori")}
+                  className="border border-gray-200 px-4 py-3 text-left cursor-pointer"
+                >
+                  <div className="text-center items-center">
+                    Kategori{" "}
+                    {sortBy === "kategori" && (sortOrder === "asc" ? "↑" : "↓")}
+                  </div>
+                </th>
+                <th
+                  onClick={() => handleSort("harga")}
+                  className="border border-gray-200 px-4 py-3 text-left cursor-pointer"
+                >
+                  <div className="text-center items-center">
+                    Harga{" "}
+                    {sortBy === "harga" && (sortOrder === "asc" ? "↑" : "↓")}
+                  </div>
+                </th>
+                <th
+                  onClick={() => handleSort("status")}
+                  className="border border-gray-200 px-4 py-3 text-left cursor-pointer"
+                >
+                  <div className="text-center items-center">
+                    Status{" "}
+                    {sortBy === "status" && (sortOrder === "asc" ? "↑" : "↓")}
+                  </div>
+                </th>
+                <th className="border border-gray-200 px-4 py-3 text-center">
+                  Action
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedRooms.map((room, index) => (
+                <tr key={room.id} className="hover:bg-gray-50">
+                  <td className="border border-gray-200 px-4 py-2 text-center">
+                    {(currentPage - 1) * itemsPerPage + index + 1}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2">
+                    {room.nama}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2 text-center">
+                    {room.kapasitas}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2 text-left">
+                    {room.kategori}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2 text-left">
+                    Rp {room.harga.toLocaleString()}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2 text-center">
+                    {room.status === "Available" ? (
+                      <span className="text-green-500">Available</span>
+                    ) : (
+                      <span className="text-red-500">Unavailable</span>
+                    )}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2">
+                    <div className="flex flex-col gap-2">
+                      {/* Baris Pertama: Approve dan Reject */}
+                      <div className="flex justify-center gap-2">
+                        {room.status === "Available" ? (
+                          <button
+                            onClick={() => handleReject(room.id)}
+                            className="px-3 py-1 bg-red-700 text-white rounded hover:bg-white hover:text-red-500 hover:border hover:border-red-500 transition-all duration-200"
+                          >
+                            Reject
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleApprove(room.id)}
+                            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-white hover:text-green-500 hover:border hover:border-green-500 transition-all duration-200"
+                          >
+                            Approve
+                          </button>
+                        )}
+                      </div>
+                      {/* Baris Kedua: Edit dan Delete */}
+                      <div className="flex justify-center gap-2">
+                        <button
+                          onClick={() => handleEdit(room)}
+                          className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-white hover:text-yellow-500 hover:border hover:border-yellow-500 transition-all duration-200"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(room.id)}
+                          className="px-3 py-1 bg-red-500 text-white rounded hover:bg-white hover:text-red-700 hover:border hover:border-red-700 transition-all duration-200"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "left",
+            gap: "8px",
+            marginTop: "30px",
+          }}
+        >
+          <button
+            onClick={() => setCurrentPage(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-4 py-2 border rounded-md disabled:opacity-50"
+          >
+            Previous
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentPage(i + 1)}
+              className={`px-4 py-2 border rounded-md ${
+                currentPage === i + 1 ? "bg-blue-500 text-white" : "bg-white"
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))}
+          <button
+            onClick={() => setCurrentPage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 border rounded-md disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+      {isModalOpen && (
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center p-8">
+          {/* Modal Container */}
+          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
+            {/* Header */}
+            <h2 className="text-2xl font-bold mb-6 text-gray-800">
+              {editingRoom ? "Edit Room" : "Tambah Room Baru"}
+            </h2>
+            {/* Form Fields */}
+            <div className="space-y-5">
+              {/* Nama Field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nama:
+                </label>
+                <input
+                  type="text"
+                  value={formData.nama}
+                  onChange={(e) =>
+                    setFormData({ ...formData, nama: e.target.value })
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Masukkan nama"
+                />
+              </div>
+              {/* Kapasitas Field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Kapasitas:
+                </label>
+                <input
+                  type="number"
+                  value={formData.kapasitas}
+                  onChange={(e) =>
+                    setFormData({ ...formData, kapasitas: e.target.value })
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Masukkan kapasitas"
+                />
+              </div>
+              {/* Kategori Field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Kategori:
+                </label>
+                <input
+                  type="text"
+                  value={formData.kategori}
+                  onChange={(e) =>
+                    setFormData({ ...formData, kategori: e.target.value })
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Masukkan kategori"
+                />
+              </div>
+              {/* Harga Field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Harga:
+                </label>
+                <input
+                  type="number"
+                  value={formData.harga}
+                  onChange={(e) =>
+                    setFormData({ ...formData, harga: e.target.value })
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Masukkan harga"
+                />
+              </div>
             </div>
-            <div className="mb-2">
-              <label>Kapasitas:</label>
-              <input
-                type="number"
-                value={formData.kapasitas}
-                onChange={(e) =>
-                  setFormData({ ...formData, kapasitas: parseInt(e.target.value) })
-                }
-                className="border p-2 w-full"
-                required
-              />
-            </div>
-            <div className="mb-2">
-              <label>Kategori:</label>
-              <input
-                type="text"
-                value={formData.kategori}
-                onChange={(e) => setFormData({ ...formData, kategori: e.target.value })}
-                className="border p-2 w-full"
-                required
-              />
-            </div>
-            <div className="mb-2">
-              <label>Harga:</label>
-              <input
-                type="number"
-                value={formData.harga}
-                onChange={(e) => setFormData({ ...formData, harga: parseInt(e.target.value) })}
-                className="border p-2 w-full"
-                required
-              />
-            </div>
-            <div className="mb-2">
-              <label>Status:</label>
-              <select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="border p-2 w-full"
-                required
-              >
-                <option value="Available">Available</option>
-                <option value="Unavailable">Unavailable</option>
-              </select>
-            </div>
-            <div className="flex justify-end gap-2">
+            {/* Footer Buttons */}
+            <div className="flex justify-end gap-4 mt-8">
               <button
-                type="button"
-                onClick={() => setIsEditModalOpen(false)}
-                className="px-4 py-2 bg-gray-300"
+                onClick={handleSubmit}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-white hover:text-blue-600 hover:border hover:border-blue-600 transition-all duration-200"
               >
-                Cancel
+                {editingRoom ? "Update" : "Simpan"}
               </button>
-              <button type="submit" className="px-4 py-2 bg-blue-500 text-white">
-                Save
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="px-5 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition duration-200"
+              >
+                Batal
               </button>
             </div>
-          </form>
+          </div>
         </div>
       )}
     </div>
